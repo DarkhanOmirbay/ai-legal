@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - AI Legal Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <h1 class="h3">Verify Your Email</h1>
+                            <p class="text-muted">We've sent a 6-digit verification code to your email</p>
+                            <p class="text-muted"><strong id="emailDisplay"></strong></p>
+                        </div>
+                        
+                        <!-- Error/Success display area -->
+                        <div id="alertArea"></div>
+                        
+                        <form id="verifyForm">
+                            <div class="mb-3">
+                                <label for="verification_code" class="form-label">Verification Code</label>
+                                <input type="text" class="form-control text-center" id="verification_code" 
+                                       name="verification_code" maxlength="6" 
+                                       style="font-size: 1.5rem; letter-spacing: 0.5rem;" 
+                                       placeholder="000000" required>
+                                <div class="form-text">Enter the 6-digit code sent to your email</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" id="verifyBtn">
+                                    Verify Email
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted">Didn't receive the code?</p>
+                            <button type="button" class="btn btn-link" id="resendBtn">
+                                Resend Code
+                            </button>
+                            <p class="mt-3">
+                                <a href="/register">← Back to registration</a>
+                            </p>
+                        </div>
+                        
+                        <!-- Countdown timer -->
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                Code expires in: <span id="countdown">15:00</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get email from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        
+        if (email) {
+            document.getElementById('emailDisplay').textContent = email;
+        } else {
+            // Redirect to register if no email provided
+            window.location.href = '/register';
+        }
+
+        function showAlert(message, type = 'danger') {
+            const alertArea = document.getElementById('alertArea');
+            alertArea.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function clearAlert() {
+            document.getElementById('alertArea').innerHTML = '';
+        }
+
+        // Format verification code input
+        document.getElementById('verification_code').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, ''); // Only allow digits
+        });
+
+        // Auto-submit when 6 digits are entered
+        document.getElementById('verification_code').addEventListener('input', function(e) {
+            if (this.value.length === 6) {
+                document.getElementById('verifyForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Countdown timer
+        let timeLeft = 15 * 60; // 15 minutes in seconds
+        const countdownElement = document.getElementById('countdown');
+        
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                countdownElement.textContent = 'Expired';
+                countdownElement.classList.add('text-danger');
+                return;
+            }
+            
+            timeLeft--;
+        }
+        
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+
+        // Verify form submission
+        document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearAlert();
+            
+            const verifyBtn = document.getElementById('verifyBtn');
+            const originalText = verifyBtn.textContent;
+            verifyBtn.textContent = 'Verifying...';
+            verifyBtn.disabled = true;
+
+            const formData = {
+                email: email,
+                verification_code: document.getElementById('verification_code').value
+            };
+
+            try {
+                const response = await fetch('/verify-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Email verified successfully! Redirecting to login...', 'success');
+                    clearInterval(countdownInterval);
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showAlert(result.detail || 'Verification failed. Please try again.');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message);
+            } finally {
+                verifyBtn.textContent = originalText;
+                verifyBtn.disabled = false;
+            }
+        });
+
+        // Resend code
+        document.getElementById('resendBtn').addEventListener('click', async function() {
+            clearAlert();
+            
+            const resendBtn = this;
+            const originalText = resendBtn.textContent;
+            resendBtn.textContent = 'Sending...';
+            resendBtn.disabled = true;
+
+            try {
+                const response = await fetch('/resend-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Verification code sent successfully!', 'success');
+                    // Reset countdown
+                    timeLeft = 15 * 60;
+                    countdownElement.classList.remove('text-danger');
+                    updateCountdown();
+                } else {
+                    showAlert(result.detail || 'Failed to resend code. Please try again.');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message);
+            } finally {
+                resendBtn.textContent = originalText;
+                resendBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

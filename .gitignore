@@ -1,0 +1,161 @@
+# =====================
+# FRONTEND (React/Vite)
+# =====================
+Frontend/node_modules/
+Frontend/dist/
+Frontend/dist-ssr/
+Frontend/.vscode/
+Frontend/.idea/
+Frontend/*.local
+Frontend/logs/
+Frontend/*.log
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+Frontend/pnpm-debug.log*
+Frontend/.DS_Store
+Frontend/*.suo
+Frontend/*.ntvs*
+Frontend/*.njsproj
+Frontend/*.sln
+Frontend/*.sw?
+
+# =====================
+# BACKEND (Python/FastAPI)
+# =====================
+Backend/__pycache__/
+Backend/*.py[cod]
+Backend/*$py.class
+Backend/*.so
+Backend/build/
+Backend/dist/
+Backend/wheels/
+Backend/*.egg-info/
+Backend/.venv/
+Backend/venv/
+Backend/env/
+Backend/ENV/
+Backend/.coverage
+Backend/.pytest_cache/
+Backend/.mypy_cache/
+Backend/.idea/
+Backend/.vscode/
+Backend/.DS_Store
+
+# =====================
+# DIFY
+# =====================
+dify/__pycache__/
+dify/*.py[cod]
+dify/*$py.class
+dify/*.so
+dify/build/
+dify/develop-eggs/
+dify/dist/
+dify/downloads/
+dify/eggs/
+dify/.eggs/
+dify/lib/
+dify/lib64/
+dify/parts/
+dify/sdist/
+dify/var/
+dify/wheels/
+dify/pip-wheel-metadata/
+dify/share/python-wheels/
+dify/*.egg-info/
+dify/.installed.cfg
+dify/*.egg
+dify/MANIFEST
+dify/*.manifest
+dify/*.spec
+dify/pip-log.txt
+dify/pip-delete-this-directory.txt
+dify/htmlcov/
+dify/.tox/
+dify/.nox/
+dify/.coverage
+dify/.coverage.*
+dify/.cache
+dify/nosetests.xml
+dify/coverage.xml
+dify/coverage.json
+dify/*.cover
+dify/*.py,cover
+dify/.hypothesis/
+dify/.pytest_cache/
+dify/*.mo
+dify/*.pot
+dify/*.log
+dify/local_settings.py
+dify/db.sqlite3
+dify/db.sqlite3-journal
+dify/instance/
+dify/.webassets-cache
+dify/.scrapy
+dify/docs/_build/
+dify/target/
+dify/.ipynb_checkpoints
+dify/profile_default/
+dify/ipython_config.py
+dify/.python-version
+dify/__pypackages__/
+dify/celerybeat-schedule
+dify/celerybeat.pid
+dify/*.sage.py
+dify/.env-local
+# НЕ игнорируем основные .env для деплоя
+# dify/.env
+dify/env/
+dify/venv/
+dify/ENV/
+dify/env.bak/
+dify/venv.bak/
+dify/.conda/
+dify/.spyderproject
+dify/.spyproject
+dify/.ropeproject
+dify/site/
+dify/.mypy_cache/
+dify/.dmypy.json
+dify/dmypy.json
+dify/.pyre/
+dify/.idea/
+dify/.DS_Store
+dify/web/.vscode/settings.json
+dify/*.iml
+dify/api/.idea
+# НЕ игнорируем .env файлы для деплоя
+# dify/api/.env
+dify/api/storage/*
+
+# Dify Docker volumes
+dify/docker-legacy/volumes/
+dify/docker/volumes/
+dify/docker/nginx/conf.d/default.conf
+dify/docker/nginx/ssl/*
+!dify/docker/nginx/ssl/.gitkeep
+dify/docker/middleware.env
+dify/docker/docker-compose.override.yaml
+
+# Dify specific
+dify/sdks/python-client/build
+dify/sdks/python-client/dist
+dify/sdks/python-client/dify_client.egg-info
+dify/.vscode/*
+!dify/.vscode/launch.json.template
+!dify/.vscode/README.md
+dify/pyrightconfig.json
+dify/api/.vscode
+dify/.pnpm-store
+dify/plugins.jsonl
+dify/mise.toml
+dify/.next/
+
+# =====================
+# GLOBAL
+# =====================
+.DS_Store
+.vscode/
+.idea/
+*.log

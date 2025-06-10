@@ -1,0 +1,29 @@
+services:
+  # web:
+  #   build: .
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:postgres@db:5432/ailegal
+  #     - DIFY_API_KEY=${DIFY_API_KEY}
+  #     - DIFY_API_BASE_URL=${DIFY_API_BASE_URL}
+  #     - SECRET_KEY=${SECRET_KEY}
+  #   volumes:
+  #     - ./app:/app
+  #   restart: always
+
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ailegal
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

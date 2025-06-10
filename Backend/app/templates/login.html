@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Legal Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <h1 class="h3">Welcome Back</h1>
+                            <p class="text-muted">Sign in to your account</p>
+                        </div>
+                        
+                        <!-- Error display area -->
+                        <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+                        
+                        <!-- Info display area for email verification -->
+                        <div id="infoAlert" class="alert alert-info d-none" role="alert"></div>
+                        
+                        <!-- Google OAuth Button -->
+                        <div class="d-grid gap-2 mb-4">
+                            <a href="/auth/google" class="btn btn-outline-danger btn-lg">
+                                <i class="fab fa-google me-2"></i>
+                                Continue with Google
+                            </a>
+                        </div>
+                        
+                        <!-- Divider -->
+                        <div class="text-center mb-4">
+                            <span class="text-muted">or</span>
+                            <hr class="my-2">
+                        </div>
+                        
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">Login</button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p><a href="/forgot-password">Forgot your password?</a></p>
+                            <p>Don't have an account? <a href="/register">Register</a></p>
+                            <p><a href="/">← Back to home</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check for OAuth errors in URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error) {
+            let errorMessage = '';
+            switch(error) {
+                case 'oauth_cancelled':
+                    errorMessage = 'Google login was cancelled.';
+                    break;
+                case 'oauth_failed':
+                    errorMessage = 'Google login failed. Please try again.';
+                    break;
+                default:
+                    errorMessage = 'An error occurred during login.';
+            }
+            showError(errorMessage);
+        }
+
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const infoAlert = document.getElementById('infoAlert');
+            
+            errorAlert.textContent = message;
+            errorAlert.classList.remove('d-none');
+            infoAlert.classList.add('d-none');
+        }
+
+        function showInfo(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const infoAlert = document.getElementById('infoAlert');
+            
+            infoAlert.innerHTML = message;
+            infoAlert.classList.remove('d-none');
+            errorAlert.classList.add('d-none');
+        }
+
+        function hideAlerts() {
+            const errorAlert = document.getElementById('errorAlert');
+            const infoAlert = document.getElementById('infoAlert');
+            
+            errorAlert.classList.add('d-none');
+            infoAlert.classList.add('d-none');
+        }
+
+        document.getElementById('loginForm').onsubmit = async function(e) {
+            e.preventDefault();
+            hideAlerts();
+
+            const loginBtn = document.getElementById('loginBtn');
+            const originalText = loginBtn.textContent;
+            loginBtn.textContent = 'Signing in...';
+            loginBtn.disabled = true;
+
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Login successful, redirect to chat
+                    window.location.href = result.redirect_url;
+                } else {
+                    // Handle different types of errors
+                    if (result.detail) {
+                        if (result.detail === "Please verify your email before logging in") {
+                            // Special handling for email verification error
+                            showInfo(`
+                                <strong>Email Verification Required</strong><br>
+                                Please verify your email before logging in. 
+                                <a href="/verify-email?email=${encodeURIComponent(formData.email)}" class="alert-link">
+                                    Click here to verify your email
+                                </a>
+                            `);
+                        } else {
+                            showError(result.detail);
+                        }
+                    } else {
+                        showError('Login failed. Please try again.');
+                    }
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                loginBtn.textContent = originalText;
+                loginBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

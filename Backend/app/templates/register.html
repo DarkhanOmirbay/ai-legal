@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AI Legal Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Add some padding to ensure register button is always visible */
+        body {
+            padding-bottom: 100px;
+        }
+        
+        /* Highlight active field */
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+        }
+        
+        /* Smooth transitions for form elements */
+        .form-control {
+            transition: all 0.3s ease;
+        }
+        
+        /* Button hover effect */
+        .btn:hover {
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <h1 class="h3">Create an Account</h1>
+                            <p class="text-muted">Join us today!</p>
+                        </div>
+                        
+                        <!-- Error display area -->
+                        <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+                        
+                        <!-- Google OAuth Button -->
+                        <div class="d-grid gap-2 mb-4">
+                            <a href="/auth/google" class="btn btn-outline-danger btn-lg">
+                                <i class="fab fa-google me-2"></i>
+                                Sign up with Google
+                            </a>
+                        </div>
+                        
+                        <!-- Divider -->
+                        <div class="text-center mb-4">
+                            <span class="text-muted">or</span>
+                            <hr class="my-2">
+                        </div>
+                        
+                        <form id="registerForm">
+                            <div class="mb-3" id="emailField">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <div class="form-text">We'll send a verification code to this email.</div>
+                            </div>
+                            <div class="mb-3" id="usernameField">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                                <div class="form-text">Username must be 3-50 characters long.</div>
+                            </div>
+                            <div class="mb-3" id="passwordField">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="form-text">Password must be at least 8 characters long.</div>
+                            </div>
+                            <div class="mb-3" id="confirmPasswordField">
+                                <label for="confirm_password" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                <div class="form-text">Please confirm your password.</div>
+                            </div>
+                            <div class="d-grid gap-2" id="submitSection">
+                                <button type="submit" class="btn btn-primary btn-lg" id="registerBtn">Register</button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p>Already have an account? <a href="/login">Login</a></p>
+                            <p><a href="/">← Back to home</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-scroll functionality
+        function scrollToElement(element) {
+            const elementRect = element.getBoundingClientRect();
+            const elementTop = elementRect.top + window.pageYOffset;
+            const offset = window.innerHeight / 3; // Scroll so element is in top third of screen
+            
+            window.scrollTo({
+                top: elementTop - offset,
+                behavior: 'smooth'
+            });
+        }
+
+        // Add scroll-on-focus for each form field
+        document.addEventListener('DOMContentLoaded', function() {
+            const formFields = ['email', 'username', 'password', 'confirm_password'];
+            
+            formFields.forEach((fieldId, index) => {
+                const field = document.getElementById(fieldId);
+                
+                // Scroll when field gets focus
+                field.addEventListener('focus', function() {
+                    // Small delay to ensure keyboard is up on mobile
+                    setTimeout(() => {
+                        scrollToElement(this.parentElement);
+                    }, 300);
+                });
+                
+                // Auto-scroll to next field when current field is filled
+                field.addEventListener('input', function() {
+                    const value = this.value.trim();
+                    
+                    // Basic validation to determine if field is "complete"
+                    let isComplete = false;
+                    
+                    switch(fieldId) {
+                        case 'email':
+                            isComplete = value.includes('@') && value.includes('.') && value.length > 5;
+                            break;
+                        case 'username':
+                            isComplete = value.length >= 3;
+                            break;
+                        case 'password':
+                            isComplete = value.length >= 8;
+                            break;
+                        case 'confirm_password':
+                            const password = document.getElementById('password').value;
+                            isComplete = value === password && value.length >= 8;
+                            break;
+                    }
+                    
+                    // If field is complete and not the last field, scroll to next
+                    if (isComplete && index < formFields.length - 1) {
+                        setTimeout(() => {
+                            const nextField = document.getElementById(formFields[index + 1]);
+                            scrollToElement(nextField.parentElement);
+                        }, 500); // Small delay so user can see they completed the field
+                    }
+                    
+                    // If this is the last field and it's complete, scroll to submit button
+                    if (isComplete && index === formFields.length - 1) {
+                        setTimeout(() => {
+                            scrollToElement(document.getElementById('submitSection'));
+                        }, 500);
+                    }
+                });
+                
+                // Also scroll on Enter key
+                field.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        
+                        if (index < formFields.length - 1) {
+                            // Move to next field
+                            const nextField = document.getElementById(formFields[index + 1]);
+                            nextField.focus();
+                        } else {
+                            // Last field, submit form
+                            document.getElementById('registerForm').dispatchEvent(new Event('submit'));
+                        }
+                    }
+                });
+            });
+        });
+
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.textContent = message;
+            errorAlert.classList.remove('d-none');
+            
+            // Scroll to error message
+            scrollToElement(errorAlert);
+        }
+
+        function hideError() {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.classList.add('d-none');
+        }
+
+        document.getElementById('registerForm').onsubmit = async function(e) {
+            e.preventDefault();
+            hideError();
+
+            // Scroll to submit button
+            scrollToElement(document.getElementById('submitSection'));
+
+            const registerBtn = document.getElementById('registerBtn');
+            const originalText = registerBtn.textContent;
+            registerBtn.textContent = 'Registering...';
+            registerBtn.disabled = true;
+
+            const formData = {
+                email: document.getElementById('email').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                confirm_password: document.getElementById('confirm_password').value
+            };
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Registration successful
+                    registerBtn.textContent = 'Success! Redirecting...';
+                    registerBtn.classList.remove('btn-primary');
+                    registerBtn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        window.location.href = result.redirect_url;
+                    }, 1500);
+                } else {
+                    // Handle different types of errors
+                    if (result.details) {
+                        // Validation errors
+                        const errorMessages = result.details.map(detail => detail.msg).join(', ');
+                        showError(`Validation Error: ${errorMessages}`);
+                    } else if (result.detail) {
+                        // Business logic errors (email exists, etc.)
+                        showError(result.detail);
+                    } else {
+                        showError('Registration failed. Please try again.');
+                    }
+                    
+                    // Reset button
+                    registerBtn.textContent = originalText;
+                    registerBtn.disabled = false;
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+                registerBtn.textContent = originalText;
+                registerBtn.disabled = false;
+            }
+        };
+
+        // Real-time password matching validation
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+                this.classList.add('is-invalid');
+            } else {
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        // Also check when password field changes
+        document.getElementById('password').addEventListener('input', function() {
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const confirmPasswordField = document.getElementById('confirm_password');
+            
+            if (confirmPassword && this.value !== confirmPassword) {
+                confirmPasswordField.setCustomValidity('Passwords do not match');
+                confirmPasswordField.classList.add('is-invalid');
+            } else {
+                confirmPasswordField.setCustomValidity('');
+                confirmPasswordField.classList.remove('is-invalid');
+            }
+        });
+
+        // Smooth scroll for any other navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    scrollToElement(target);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
